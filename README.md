@@ -12,18 +12,7 @@ Integração completa entre **API**, **MVC Web** e **Aplicação Desktop**, util
 ---
 
 ## 📘 Visão Geral  
-O projeto **TransformeseSolution** demonstra uma arquitetura moderna formada por:
-
-- **Transformese.Api** → API REST centralizada  
-- **Transformese.Web (MVC)** → Aplicação Web que consome a API  
-- **Transformese.Desktop** → Aplicação Desktop consumindo a API  
-- **Transformese.Domain** → Entidades e regras de negócio  
-- **Transformese.Data** → Acesso a dados, EF Core e repositórios  
-- **Transformese.DTO** → Objetos de transferência usados pela API
-
-A regra principal:  
-**toda comunicação com o banco ocorre exclusivamente pela API**.  
-Web e Desktop são apenas clientes.
+O projeto demonstra como integrar uma API central com clientes Web (MVC) e Desktop, mantendo uma arquitetura limpa e escalável. Toda manipulação de dados ocorre exclusivamente pela API. Clientes apenas consomem serviços.
 
 ---
 
@@ -33,29 +22,26 @@ Web e Desktop são apenas clientes.
 TransformeseSolution.sln
 │
 ├── Transformese.Api
-│     └─ API REST (Controllers, Endpoints, Swagger)
-│
-├── Transformese.Web
-│     └─ Projeto MVC consumindo API via HttpClient
-│
-├── Transformese.Desktop
-│     └─ Aplicação Desktop (WinForms ou WPF) consumindo API
-│
-├── Transformese.Domain
-│     └─ Entidades e regras de negócio
+│     └─ API REST (Controllers, Endpoints, Swagger, Services)
 │
 ├── Transformese.Data
-│     └─ EF Core, contexto, migrations, repositórios
+│     └─ Camada de dados (EF Core, AppDbContext, Migrations, Repositórios)
 │
-└── Transformese.DTO
-      └─ Objetos de Transferência (DTOs)
+├── Transformese.Desktop
+│     └─ Aplicação Desktop consumindo API
+│
+├── Transformese.Domain
+│     └─ Entidades de domínio e regras de negócio
+│
+└── Transformese.MVC
+      └─ Aplicação Web MVC consumindo API via HttpClient
 ```
 
 ---
 
 ## 🛠 Tecnologias Utilizadas
 
-- .NET 7 / 8  
+- .NET 7/8  
 - ASP.NET Core Web API  
 - ASP.NET MVC  
 - Windows Forms / WPF  
@@ -69,118 +55,88 @@ TransformeseSolution.sln
 
 ## 🚀 Como Executar o Projeto
 
-### 1. Clone o repositório  
+### 1. Clone
 ```bash
 git clone https://github.com/luanps2/TransformeseSolution.git
 ```
 
-### 2. Abra no Visual Studio  
+### 2. Abra no Visual Studio
 Abra o arquivo `TransformeseSolution.sln`.
 
-### 3. Configure o banco  
-Edite a connection string no arquivo:
-
+### 3. Configure o banco
+Edite:
 ```
 Transformese.Api/appsettings.json
 ```
 
-### 4. Execute a API  
-A API deve ser iniciada primeiro.
-
-Ela abrirá o Swagger em:
-
+### 4. Execute a API
+Acesse:
 ```
 https://localhost:5001/swagger
 ```
 
-### 5. Execute o MVC  
-Após a API estar rodando:
+### 5. Execute o MVC
+O projeto **Transformese.MVC** consome a API.
 
-```
-Transformese.Web
-```
-
-### 6. Execute o Desktop  
-Certifique-se de que o Desktop esteja configurado para chamar a mesma URL base da API.
+### 6. Execute o Desktop
+O projeto **Transformese.Desktop** consome a API.
 
 ---
 
 ## 🔌 Fluxo de Comunicação
-
 ```
 [MVC]  ────┐
-           ├──→  API  → Domain → Data → Banco
+           ├──→ API → Domain → Data → Banco
 [Desktop] ─┘
 ```
 
 ---
 
-## 📄 Documentação da API — Swagger
-
-A documentação fica disponível automaticamente em:
-
+## 📄 Documentação da API
 ```
 /swagger
 ```
-
-Inclui:
-
-- Modelos  
-- Endpoints  
-- Exemplos de requisição  
-- Testes diretos no navegador  
 
 ---
 
 ## 📊 Roadmap
 
-### Em andamento  
+### Em andamento
 - Padronização dos endpoints  
-- Refatoração completa do MVC para consumir somente a API  
-- Normalização dos DTOs
+- Ajustes de DTOs  
+- Refatoração do MVC
 
-### Próximas etapas  
-- Implementar autenticação JWT  
-- Criar testes unitários (xUnit)  
-- Criar Dockerfile para a API  
-- Publicar a API no Azure
-
----
-
-## 🔐 Segurança (Planejado)
-
-- JWT Authentication  
-- Refresh Tokens  
-- Perfis de usuário
+### Futuro
+- Autenticação JWT  
+- Testes com xUnit  
+- Dockerfile  
+- Deploy no Azure
 
 ---
 
-## 🧪 Testes (Planejado)
-
-- Testes unitários (xUnit)  
-- Testes de repositório com banco em memória  
-- Testes de integração dos endpoints
-
----
-
-## 🧩 Boas Práticas da Solução
-
-- Não expor entidades do domínio pela API  
-- Controllers finos, lógicos em services  
-- MVC e Desktop consomem somente a API  
-- Uso correto de DTOs  
+## 🧩 Boas Práticas
+- Usar DTOs sempre  
+- Não expor entidades do domínio  
+- MVC/Desktop não acessam banco  
+- Controllers finos, lógica em services  
 - Repositórios separados  
-- Endpoints REST padronizados  
-- Uso de async/await em toda I/O  
+- Uso de async/await  
 - Migrations organizadas
 
 ---
 
+## 🤝 Contribuição
+1. Faça um fork  
+2. Crie uma branch  
+3. Envie um Pull Request
+
+---
+
 ## 📜 Licença  
-Este repositório pode utilizar a licença MIT ou outra de sua preferência.
+Recomendado uso da licença MIT.
 
 ---
 
 ## ✨ Autor  
-Projeto desenvolvido por **Luan Costa** para fins educacionais e demonstração de arquitetura profissional para os alunos do projeto **Transforme-se**.
+Projeto desenvolvido por **Luan Costa**.
 
