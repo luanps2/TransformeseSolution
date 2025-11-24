@@ -1,0 +1,141 @@
+﻿@using Transformese.Domain.Entities                    <!-- Importa as classes DTO (como UsuarioDTO, CursoDTO, etc.) -->
+@using Microsoft.AspNetCore.Http            <!-- Necessário para acessar a sessão HTTP -->
+@inject IHttpContextAccessor HttpContextAccessor 
+<!-- Injeta o acesso ao contexto HTTP (para ler variáveis da sessão) -->
+
+@{
+    // Captura o nome do controlador e da ação atuais (para destacar o menu, se quiser)
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+    bool isHomePage = controller == "Home" && action == "Index"; // Verifica se está na página inicial
+
+    // Lê da sessão o nome e o tipo do usuário logado
+    var usuarioLogado = HttpContextAccessor.HttpContext?.Session.GetString("Usuario");
+    var tipoUsuario = HttpContextAccessor.HttpContext?.Session.GetString("TipoUsuario");
+}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <!-- Cabeçalho padrão com meta e título -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Transforme-se</title>
+
+    <!-- Links para Bootstrap e ícones -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+
+<body>
+    <!-- Barra de navegação superior -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container-fluid">
+
+            <!-- Logotipo + link para a Home -->
+            <a class="navbar-brand fw-bold text-white" href="@Url.Action("Index", "Home")">
+                <img src="~/images/logo-transformese.png" alt="Transforme-se" height="40" class="me-2" />
+                Transforme-se
+            </a>
+
+            <!-- Botão de expansão no mobile -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Menu principal -->
+            <div class="collapse navbar-collapse" id="mainNavbar">
+
+                <!-- Menu de navegação à esquerda -->
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-center">
+
+                    <!-- Link para a Home -->
+                    <li class="nav-item">
+                        <a class="nav-link text-white fw-semibold" href="@Url.Action("Index", "Home")">Início</a>
+                    </li>
+
+                    <!-- Dropdown: Cursos -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-white fw-semibold" href="#" id="menuCursos" role="button" data-bs-toggle="dropdown">
+                            Cursos
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark">
+                            <!-- Link para listar todos os cursos -->
+                            <li><a class="dropdown-item" href="@Url.Action("Index", "Curso")">Todos os Cursos</a></li>
+
+                            <!-- Link para cursos do aluno -->
+                            <li><a class="dropdown-item" href="@Url.Action("Index", "Aluno")">Meus Cursos</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Dropdown: Administração (só aparece para administradores) -->
+                    @if (tipoUsuario == "Administrador")
+                    {
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-white fw-semibold" href="#" id="menuAdmin" role="button" data-bs-toggle="dropdown">
+                                Administração
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-dark">
+                                <!-- Acesso ao painel administrativo -->
+                                <li><a class="dropdown-item" href="@Url.Action("Index", "Dashboard")">Painel</a></li>
+
+                                <!-- Acesso à gestão de professores -->
+                                <li><a class="dropdown-item" href="@Url.Action("Index", "Professor")">Professores</a></li>
+
+                                <!-- Acesso à gestão de alunos -->
+                                <li><a class="dropdown-item" href="@Url.Action("Index", "Aluno")">Alunos</a></li>
+                            </ul>
+                        </li>
+                    }
+                </ul>
+
+                <!-- Área do usuário à direita -->
+                <ul class="navbar-nav ms-auto">
+                    <!-- Se o usuário está logado -->
+                    @if (!string.IsNullOrEmpty(usuarioLogado))
+                    {
+                        <li class="nav-item dropdown">
+                            <!-- Exibe o nome e tipo do usuário -->
+                            <a class="nav-link dropdown-toggle text-white fw-semibold" href="#" id="userMenu" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle me-1"></i> @usuarioLogado (@tipoUsuario)
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark">
+                                <!-- Link para logout -->
+                                <li>
+                                    <form asp-controller="Account" asp-action="Logout" method="post">
+                                        <button class="dropdown-item text-danger" type="submit">Sair</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    }
+                    else
+                    {
+                        <!-- Caso não esteja logado, exibe link para Login -->
+                        <li class="nav-item">
+                            <a class="nav-link text-white fw-semibold" href="@Url.Action("Login", "Account")">
+                                <i class="bi bi-box-arrow-in-right me-1"></i> Entrar
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Conteúdo principal renderizado dinamicamente -->
+    <main class="container mt-4">
+        @RenderBody()
+    </main>
+
+    <!-- Rodapé fixo -->
+    <footer class="bg-dark text-center text-white py-3 mt-5">
+        <small>&copy; @DateTime.Now.Year - Transforme-se. Todos os direitos reservados.</small>
+    </footer>
+
+    <!-- Scripts JavaScript essenciais -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>
