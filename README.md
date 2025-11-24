@@ -1,36 +1,45 @@
-TransformeseSolution
+# TransformeseSolution  
+Integração completa entre **API**, **MVC Web** e **Aplicação Desktop**, utilizando arquitetura em camadas para centralizar regras de negócio e acesso a dados.
 
-Sistema modular composto por API, MVC Web e Aplicação Desktop, integrados por uma arquitetura em camadas para centralizar regras de negócio e acesso a dados.
+---
 
-📘 Visão Geral
+## 📌 Status do Projeto  
+![Static Badge](https://img.shields.io/badge/Status-Em%20Desenvolvimento-blue)  
+![Static Badge](https://img.shields.io/badge/.NET-8.0-blueviolet)  
+![Static Badge](https://img.shields.io/badge/Arquitetura-Camadas-green)  
+![Static Badge](https://img.shields.io/badge/API-REST-orange)
 
-O projeto TransformeseSolution demonstra um ecossistema completo com:
+---
 
-Transformese.Api → API REST centralizada
+## 📘 Visão Geral  
+O projeto **TransformeseSolution** demonstra uma arquitetura moderna formada por:
 
-Transformese.Web (MVC) → Cliente web consumindo a API
+- **Transformese.Api** → API REST centralizada  
+- **Transformese.Web (MVC)** → Aplicação Web que consome a API  
+- **Transformese.Desktop** → Aplicação Desktop consumindo a API  
+- **Transformese.Domain** → Entidades e regras de negócio  
+- **Transformese.Data** → Acesso a dados, EF Core e repositórios  
+- **Transformese.DTO** → Objetos de transferência usados pela API
 
-Transformese.Desktop → Cliente Desktop também consumindo a API
+A regra principal:  
+**toda comunicação com o banco ocorre exclusivamente pela API**.  
+Web e Desktop são apenas clientes.
 
-Transformese.Domain → Entidades e regras de negócio
+---
 
-Transformese.Data → Repositórios, EF e persistência
+## 🧱 Estrutura da Solução
 
-Transformese.DTO → Objetos de transferência usados entre clientes e API
-
-Todos os clientes consomem apenas a API como porta única para manipulação de dados.
-
-🧱 Estrutura da Solução
-/TransformeseSolution.sln
+```
+TransformeseSolution.sln
 │
 ├── Transformese.Api
 │     └─ API REST (Controllers, Endpoints, Swagger)
 │
 ├── Transformese.Web
-│     └─ Projeto MVC que consome a API via HttpClient
+│     └─ Projeto MVC consumindo API via HttpClient
 │
 ├── Transformese.Desktop
-│     └─ Aplicação Desktop (WinForms ou WPF) consumindo a API
+│     └─ Aplicação Desktop (WinForms ou WPF) consumindo API
 │
 ├── Transformese.Domain
 │     └─ Entidades e regras de negócio
@@ -40,134 +49,138 @@ Todos os clientes consomem apenas a API como porta única para manipulação de 
 │
 └── Transformese.DTO
       └─ Objetos de Transferência (DTOs)
+```
 
-🛠 Tecnologias Utilizadas
+---
 
-.NET 7 / 8
+## 🛠 Tecnologias Utilizadas
 
-ASP.NET Core Web API
+- .NET 7 / 8  
+- ASP.NET Core Web API  
+- ASP.NET MVC  
+- Windows Forms / WPF  
+- Entity Framework Core  
+- SQL Server  
+- Swagger / OpenAPI  
+- HttpClient  
+- Arquitetura em camadas
 
-ASP.NET MVC
+---
 
-Windows Forms / WPF
+## 🚀 Como Executar o Projeto
 
-Entity Framework Core
-
-SQL Server / SQL Express
-
-Swagger / OpenAPI
-
-HttpClient
-
-Arquitetura em camadas (Domain → Data → API → Clientes)
-
-🚀 Executando o Projeto Localmente
-1. Clonar o repositório
+### 1. Clone o repositório  
+```bash
 git clone https://github.com/luanps2/TransformeseSolution.git
+```
 
-2. Abrir a solução
+### 2. Abra no Visual Studio  
+Abra o arquivo `TransformeseSolution.sln`.
 
-Abra TransformeseSolution.sln no Visual Studio 2022 ou superior.
+### 3. Configure o banco  
+Edite a connection string no arquivo:
 
-3. Configurar o banco
-
-Edite a connection string no projeto da API:
+```
 Transformese.Api/appsettings.json
+```
 
-4. Restaurar pacotes e compilar
+### 4. Execute a API  
+A API deve ser iniciada primeiro.
 
-O Visual Studio fará isso automaticamente.
+Ela abrirá o Swagger em:
 
-5. Executar a API
-
-Defina o projeto Transformese.Api como “Start Project” e execute.
-
-Ela exporá os endpoints e abrirá o Swagger em:
-
+```
 https://localhost:5001/swagger
+```
 
-6. Executar o cliente Web (MVC)
+### 5. Execute o MVC  
+Após a API estar rodando:
 
-Após a API estar no ar, execute Transformese.Web.
+```
+Transformese.Web
+```
 
-7. Executar o cliente Desktop
+### 6. Execute o Desktop  
+Certifique-se de que o Desktop esteja configurado para chamar a mesma URL base da API.
 
-Certifique-se de que o Desktop esteja apontando para a mesma URL da API.
+---
 
-🔌 Fluxo de Comunicação
+## 🔌 Fluxo de Comunicação
 
-Web e Desktop enviam requisições para a API
+```
+[MVC]  ────┐
+           ├──→  API  → Domain → Data → Banco
+[Desktop] ─┘
+```
 
-A API valida, processa e chama a camada Domain
+---
 
-Domain utiliza a camada Data para persistência
+## 📄 Documentação da API — Swagger
 
-Retorno volta para Web ou Desktop em forma de DTO
+A documentação fica disponível automaticamente em:
 
-📄 Documentação da API (Swagger)
-
-Ao executar a API, a documentação ficará disponível em:
-
-/swagger/index.html
-
+```
+/swagger
+```
 
 Inclui:
 
-Endpoints
+- Modelos  
+- Endpoints  
+- Exemplos de requisição  
+- Testes diretos no navegador  
 
-Modelos
+---
 
-Exemplos de requisição/resposta
+## 📊 Roadmap
 
-Testes diretos pelo navegador
+### Em andamento  
+- Padronização dos endpoints  
+- Refatoração completa do MVC para consumir somente a API  
+- Normalização dos DTOs
 
-📊 Roadmap
-Em andamento
+### Próximas etapas  
+- Implementar autenticação JWT  
+- Criar testes unitários (xUnit)  
+- Criar Dockerfile para a API  
+- Publicar a API no Azure
 
-Padronização dos endpoints
+---
 
-Separação clara entre DTOs e entidades
+## 🔐 Segurança (Planejado)
 
-Refatoração do MVC para consumir apenas a API
+- JWT Authentication  
+- Refresh Tokens  
+- Perfis de usuário
 
-Próximos passos
+---
 
-Implementar autenticação (JWT)
+## 🧪 Testes (Planejado)
 
-Criar testes unitários (xUnit ou MSTest)
+- Testes unitários (xUnit)  
+- Testes de repositório com banco em memória  
+- Testes de integração dos endpoints
 
-Adicionar camadas de Service para regras mais complexas
+---
 
-Criar Dockerfile para API
+## 🧩 Boas Práticas da Solução
 
-Disponibilizar versão publicada da API no Azure
+- Não expor entidades do domínio pela API  
+- Controllers finos, lógicos em services  
+- MVC e Desktop consomem somente a API  
+- Uso correto de DTOs  
+- Repositórios separados  
+- Endpoints REST padronizados  
+- Uso de async/await em toda I/O  
+- Migrations organizadas
 
-🔐 Segurança (Planejado)
+---
 
-JWT Authentication
+## 📜 Licença  
+Este repositório pode utilizar a licença MIT ou outra de sua preferência.
 
-Refresh Tokens
+---
 
-Perfis de usuário (Admin, Aluno, Professor)
+## ✨ Autor  
+Projeto desenvolvido por **Luan Costa** para fins educacionais e demonstração de arquitetura profissional para os alunos do projeto **Transforme-se**.
 
-🧪 Testes (Planejado)
-
-Testes de API com xUnit
-
-Testes de repositório com InMemoryDatabase
-
-Testes de integração para endpoints críticos
-
-🧩 Padrões e Boas Práticas Utilizados
-
-DTOs entre API ↔ Clientes
-
-Repository Pattern
-
-Separação Domain/Data
-
-MVC usando exclusivamente HttpClient
-
-Centralização de serviços na API
-
-Respostas padronizadas (status codes + mensagens)
