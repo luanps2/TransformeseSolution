@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Threading.Tasks;
+using Transformese.Domain.Entities;
 using Transformese.MVC.Services;
 
 namespace TransformeSeMVC.Web.Controllers
@@ -13,41 +16,36 @@ namespace TransformeSeMVC.Web.Controllers
             _api = api;
         }
 
-        //// Lista (GET /Curso)
-        //[HttpGet]
-        //public async Task<IActionResult> Index()
-        //{
-        //    var cursos = await _api.GetAllAsync();
-        //    return View(cursos);
-        //}
-
+        // LISTA
         public async Task<IActionResult> Index()
         {
             var cursos = await _api.GetAllAsync();
 
             if (cursos == null)
-                throw new Exception("O API Client retornou NULL. O problema está no consumo da API.");
+                throw new Exception("Erro: API retornou NULL para listagem de cursos.");
 
             return View(cursos);
         }
 
-
-        // Exibe detalhes do curso
-        public async Task<IActionResult> Detalhes(int id)
+        // DETAILS
+        public async Task<IActionResult> Details(int id)
         {
             var curso = await _api.GetByIdAsync(id);
             if (curso == null) return NotFound();
-            return PartialView("_DetalhesCursoPartial", curso);
+
+            return View(curso);
         }
 
-        // Endpoint para exibir detalhes no modal (AJAX)
+        // MODAL (AJAX)
         [HttpGet]
         public async Task<IActionResult> DetalhesModal(int id)
         {
             var curso = await _api.GetByIdAsync(id);
             if (curso == null) return NotFound();
 
-            var imagem = !string.IsNullOrEmpty(curso.Imagem) ? $"/images/cursos/{curso.Imagem}" : "/images/default-course.jpg";
+            var imagem = !string.IsNullOrEmpty(curso.Imagem)
+                ? $"/images/cursos/{curso.Imagem}"
+                : "/images/default-course.jpg";
 
             return Json(new
             {
@@ -57,6 +55,83 @@ namespace TransformeSeMVC.Web.Controllers
                 unidade = curso.UnidadeNome ?? "Não informada",
                 imagem
             });
+        }
+
+        // CREATE
+        [Authorize(Roles = "Administrador")]
+        [HttpGet]
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        [Authorize(Roles = "Administrador")]
+        [HttpPost]
+        public async Task<IActionResult> Create(Curso curso, IFormFile? arquivo)
+        {
+            Stream? stream = null;
+            string? fileName = null;
+
+            if (arquivo != null && arquivo.Length > 0)
+            {
+                stream = arquivo.OpenReadStream();
+                fileName = arquivo.FileName;
+            }
+
+            var response = await _api.CreateAsync(curso, stream, fileName);
+
+            if (!response.IsSuccessStatusCode)
+                return BadRequest("Erro ao criar curso.");
+
+            return RedirectToAction("Index");
+        }
+
+
+
+        // EDIT
+        [Authorize(Roles = "Administrador")]
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var curso = await _api.GetByIdAsync(id);
+            if (curso == null) return NotFound();
+
+            return View(curso);
+        }
+
+        [Authorize(Roles = "Administrador")]
+        [HttpPost]
+        public async Task<IActionResult> Edit(int id, Curso curso, IFormFile? arquivo)
+        {
+            Stream? stream = null;
+            string? fileName = null;
+
+            if (arquivo != null && arquivo.Length > 0)
+            {
+                stream = arquivo.OpenReadStream();
+                fileName = arquivo.FileName;
+            }
+
+            var resp = await _api.UpdateAsync(id, curso, stream, fileName);
+
+            if (!resp.IsSuccessStatusCode)
+                return BadRequest("Erro ao atualizar curso.");
+
+            return RedirectToAction("Index");
+        }
+
+
+        // DELETE
+        [Authorize(Roles = "Administrador")]
+        [HttpPost]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var result = await _api.DeleteAsync(id);
+
+            if (!result.IsSuccessStatusCode)
+                return BadRequest("Erro ao excluir o curso.");
+
+            return RedirectToAction(nameof(Index));
         }
     }
 }
