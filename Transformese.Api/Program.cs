@@ -39,7 +39,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         sql => sql.MigrationsAssembly("Transformese.Data"));
 });
 
-// Controllers + JSON Fix
+// Controllers
 builder.Services.AddControllers()
     .AddJsonOptions(opt =>
     {
@@ -70,14 +70,12 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // CORS
-builder.Services.AddCors(opt =>
+builder.Services.AddCors(options =>
 {
-    opt.AddPolicy("AllowFrontend", builder =>
-    {
-        builder.AllowAnyHeader()
-               .AllowAnyMethod()
-               .AllowAnyOrigin();
-    });
+    options.AddPolicy("LocalDev", p => p
+        .WithOrigins("https://localhost:5001") // ajuste conforme portas
+        .AllowAnyHeader()
+        .AllowAnyMethod());
 });
 
 var app = builder.Build();
@@ -86,15 +84,21 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.MapGet("/", () => Results.Redirect("/swagger"));
-
 }
 
-app.UseHttpsRedirection();
-app.UseCors("AllowFrontend");
+// Serve arquivos estáticos em wwwroot (imagens)
+app.UseStaticFiles();
 
-app.UseAuthentication();
+// Redirecionar / > /swagger
+app.MapGet("/", ctx =>
+{
+    ctx.Response.Redirect("/swagger");
+    return Task.CompletedTask;
+});
+
+app.UseHttpsRedirection();
 app.UseAuthorization();
+app.UseCors("LocalDev");
 
 app.MapControllers();
 

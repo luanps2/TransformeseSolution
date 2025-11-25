@@ -1,29 +1,50 @@
-﻿@model IEnumerable<Transformese.Domain.Entities.Curso>
+﻿@model IEnumerable<Transformese.Domain.Entities.Usuario>
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+
 @{
-    ViewData["Title"] = "Minhas Turmas";
+    ViewData["Title"] = "Professores";
+    var apiBase = (Configuration["Api:BaseUrl"] ?? "").TrimEnd('/');
 }
 
-<h2 class="fw-bold text-primary mb-4">Turmas e Cursos</h2>
+<h2 class="mb-4">Professores</h2>
 
-<table class="table table-hover align-middle">
-    <thead class="table-light">
+<p>
+    <a class="btn btn-primary" asp-action="Create">Novo Professor</a>
+</p>
+
+<table class="table table-striped table-hover">
+    <thead class="table-dark">
         <tr>
-            <th>Título</th>
-            <th>Unidade</th>
-            <th>Dia</th>
-            <th>Horário</th>
-            <th>Ações</th>
+            <th style="width:80px;">Foto</th>
+            <th>Nome</th>
+            <th>Email</th>
+            <th>Data Nasc.</th>
+            <th style="width:220px;">Ações</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var curso in Model)
+        @foreach (var prof in Model ?? Enumerable.Empty<Transformese.Domain.Entities.Usuario>())
         {
             <tr>
-                <td>@curso.Nome</td>
-                <td>@curso.Unidade?.Nome</td>
-             
                 <td>
-                    <a class="btn btn-sm btn-transforme" href="#">Ver Alunos</a>
+                    <img src="@(string.IsNullOrEmpty(prof.FotoPerfil) ? "/images/default-user.jpg" : $"{apiBase}/images/usuarios/{prof.FotoPerfil}")"
+                         alt="Foto" class="rounded-circle" style="width:64px;height:64px;object-fit:cover;" />
+                </td>
+                <td>@prof.Nome</td>
+                <td>@prof.Email</td>
+                <td>@(prof.DataNascimento.ToString("yyyy-MM-dd"))</td>
+                <td>
+                    <a class="btn btn-sm btn-info me-1" asp-action="Details" asp-route-id="@prof.IdUsuario">
+                        <i class="bi bi-eye"></i> Ver
+                    </a>
+                    <a class="btn btn-sm btn-warning text-white me-1" asp-action="Edit" asp-route-id="@prof.IdUsuario">
+                        <i class="bi bi-pencil"></i> Editar
+                    </a>
+                    <form asp-action="Delete" asp-route-id="@prof.IdUsuario" method="post" class="d-inline-block" onsubmit="return confirm('Confirma exclusão deste professor?');">
+                        <button type="submit" class="btn btn-sm btn-danger">
+                            <i class="bi bi-trash"></i> Deletar
+                        </button>
+                    </form>
                 </td>
             </tr>
         }

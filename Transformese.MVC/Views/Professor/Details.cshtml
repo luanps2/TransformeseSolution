@@ -1,0 +1,32 @@
+@using System.Runtime.Intrinsics.Arm
+@model Transformese.Domain.Entities.Usuario
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+
+@{
+    var apiBase = (Configuration["Api:BaseUrl"] ?? "").TrimEnd('/');
+    ViewData["Title"] = "Detalhes do Professor";
+}
+
+<h2>Detalhes</h2>
+
+<div class="card mb-3">
+    <div class="row g-0">
+        <div class="col-md-3 text-center p-3">
+            <img src="@(string.IsNullOrEmpty(Model.FotoPerfil) ? "/images/default-user.jpg" : $"{apiBase}/images/usuarios/{Model.FotoPerfil}")"
+                 class="img-fluid rounded" alt="Foto" style="max-height:240px;object-fit:cover;" />
+        </div>
+        <div class="col-md-9">
+            <div class="card-body">
+                <h4 class="card-title">@Model.Nome</h4>
+                <p class="card-text"><strong>Email:</strong> @Model.Email</p>
+                <p class="card-text"><strong>Data Nasc.:</strong> @Model.DataNascimento.ToString("yyyy-MM-dd")</p>
+                <p class="card-text"><strong>Tipo:</strong> @(Model.TipoUsuario?.DescricaoTipoUsuario ?? "—")</p>
+
+                <p>
+                    <a asp-action="Edit" asp-route-id="@Model.IdUsuario" class="btn btn-warning me-2">Editar</a>
+                    <a asp-action="Index" class="btn btn-secondary">Voltar</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
