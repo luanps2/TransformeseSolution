@@ -1,0 +1,33 @@
+@model UsuarioDto
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+
+@{
+    ViewData["Title"] = "Excluir Aluno";
+    var apiBase = (Configuration["Api:BaseUrl"] ?? "").TrimEnd('/');
+    string FotoUrl(string img)
+    {
+        if (string.IsNullOrWhiteSpace(img)) return "/images/default-user.jpg";
+        if (img.StartsWith("http", System.StringComparison.OrdinalIgnoreCase)) return img;
+        return string.IsNullOrEmpty(apiBase) ? $"/images/usuarios/{img}" : $"{apiBase}/images/usuarios/{img}";
+    }
+}
+
+<h2>Excluir Aluno</h2>
+
+<div class="card p-3 mb-3">
+    <div class="d-flex align-items-center gap-3">
+        <img src="@FotoUrl(Model.Imagem)" style="width:96px;height:96px;object-fit:cover;border-radius:8px;" />
+        <div>
+            <h4 class="mb-1">@Model.Nome</h4>
+            <p class="mb-0"><strong>Email:</strong> @Model.Email</p>
+            <p class="mb-0"><strong>Data Nasc.:</strong> @Model.DataNascimento.ToString("yyyy-MM-dd")</p>
+        </div>
+    </div>
+</div>
+
+<form asp-action="Delete" asp-route-id="@Model.IdUsuario" method="post">
+    @Html.AntiForgeryToken()
+    <p>Tem certeza que deseja excluir este aluno?</p>
+    <button type="submit" class="btn btn-danger">Confirmar exclusão</button>
+    <a asp-action="Index" class="btn btn-secondary ms-2">Cancelar</a>
+</form>

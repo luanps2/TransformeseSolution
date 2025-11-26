@@ -1,19 +1,24 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Transformese.Domain.Entities;
 using Transformese.MVC.Services;
+using Transformese.Api.DTOs;
 
 namespace TransformeSeMVC.Web.Controllers
 {
     public class CursoController : Controller
     {
         private readonly ICursoApiClient _api;
+        private readonly IUnidadeApiClient _unidadeApi;
 
-        public CursoController(ICursoApiClient api)
+        public CursoController(ICursoApiClient api, IUnidadeApiClient unidadeApi)
         {
             _api = api;
+            _unidadeApi = unidadeApi;
         }
 
         // LISTA
@@ -60,8 +65,20 @@ namespace TransformeSeMVC.Web.Controllers
         // CREATE
         [Authorize(Roles = "Administrador")]
         [HttpGet]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            // popula ViewBag.Unidades para a view
+            var unidades = await _unidadeApi.GetAllAsync();
+            var unidadesDto = (unidades ?? Enumerable.Empty<Unidade>())
+                .Select(u => new UnidadeDto
+                {
+                    IdUnidade = u.IdUnidade,
+                    Nome = u.Nome,
+                    Endereco = u.Endereco
+                })
+                .ToList();
+
+            ViewBag.Unidades = unidadesDto;
             return View();
         }
 
@@ -81,12 +98,18 @@ namespace TransformeSeMVC.Web.Controllers
             var response = await _api.CreateAsync(curso, stream, fileName);
 
             if (!response.IsSuccessStatusCode)
+            {
+                // Re-popular ViewBag em caso de erro para reexibir a view corretamente
+                var unidades = await _unidadeApi.GetAllAsync();
+                ViewBag.Unidades = (unidades ?? Enumerable.Empty<Unidade>())
+                    .Select(u => new UnidadeDto { IdUnidade = u.IdUnidade, Nome = u.Nome, Endereco = u.Endereco })
+                    .ToList();
+
                 return BadRequest("Erro ao criar curso.");
+            }
 
             return RedirectToAction("Index");
         }
-
-
 
         // EDIT
         [Authorize(Roles = "Administrador")]
@@ -95,6 +118,12 @@ namespace TransformeSeMVC.Web.Controllers
         {
             var curso = await _api.GetByIdAsync(id);
             if (curso == null) return NotFound();
+
+            // popula unidades para o select
+            var unidades = await _unidadeApi.GetAllAsync();
+            ViewBag.Unidades = (unidades ?? Enumerable.Empty<Unidade>())
+                .Select(u => new UnidadeDto { IdUnidade = u.IdUnidade, Nome = u.Nome, Endereco = u.Endereco })
+                .ToList();
 
             return View(curso);
         }
@@ -115,11 +144,18 @@ namespace TransformeSeMVC.Web.Controllers
             var resp = await _api.UpdateAsync(id, curso, stream, fileName);
 
             if (!resp.IsSuccessStatusCode)
+            {
+                // Re-popular ViewBag em caso de erro para reexibir a view corretamente
+                var unidades = await _unidadeApi.GetAllAsync();
+                ViewBag.Unidades = (unidades ?? Enumerable.Empty<Unidade>())
+                    .Select(u => new UnidadeDto { IdUnidade = u.IdUnidade, Nome = u.Nome, Endereco = u.Endereco })
+                    .ToList();
+
                 return BadRequest("Erro ao atualizar curso.");
+            }
 
             return RedirectToAction("Index");
         }
-
 
         // DELETE
         [Authorize(Roles = "Administrador")]

@@ -17,7 +17,7 @@
 
         @if (isAdmin)
         {
-            <a href="@Url.Action("Criar", "Curso")" class="btn btn-brand">
+            <a href="@Url.Action("Create", "Curso")" class="btn btn-brand">
                 <i class="bi bi-plus-circle me-1"></i> Criar Curso
             </a>
         }
@@ -49,14 +49,13 @@
                         {
                             <div class="d-flex justify-content-between">
                                 <a class="btn btn-warning w-50 me-1"
-                                   href="@Url.Action("Editar", "Curso", new { id = curso.IdCurso })">
+                                   href="@Url.Action("Edit", "Curso", new { id = curso.IdCurso })">
                                     <i class="bi bi-pencil-square"></i> Editar
                                 </a>
 
-                                <form method="post" action="@Url.Action("Excluir", "Curso")"
+                                <form method="post" action="@Url.Action("Delete", "Curso", new { id = curso.IdCurso })"
                                       onsubmit="return confirm('Tem certeza que deseja excluir este curso?');"
                                       class="w-50">
-                                    <input type="hidden" name="id" value="@curso.IdCurso" />
                                     <button type="submit" class="btn btn-danger w-100">
                                         <i class="bi bi-trash"></i> Excluir
                                     </button>

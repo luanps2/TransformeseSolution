@@ -2,17 +2,17 @@
 @inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 
 @{
-    ViewData["Title"] = "Editar Professor";
+    ViewData["Title"] = "Editar Aluno";
     var apiBase = (Configuration["Api:BaseUrl"] ?? "").TrimEnd('/');
-    string FotoUrl(string foto)
+    string FotoUrl(string img)
     {
-        if (string.IsNullOrWhiteSpace(foto)) return "/images/default-user.jpg";
-        if (foto.StartsWith("http", System.StringComparison.OrdinalIgnoreCase)) return foto;
-        return string.IsNullOrEmpty(apiBase) ? $"/images/usuarios/{foto}" : $"{apiBase}/images/usuarios/{foto}";
+        if (string.IsNullOrWhiteSpace(img)) return "/images/default-user.jpg";
+        if (img.StartsWith("http", System.StringComparison.OrdinalIgnoreCase)) return img;
+        return string.IsNullOrEmpty(apiBase) ? $"/images/usuarios/{img}" : $"{apiBase}/images/usuarios/{img}";
     }
 }
 
-<h2>Editar Professor</h2>
+<h2>Editar Aluno</h2>
 
 <form asp-action="Edit" asp-route-id="@Model.IdUsuario" method="post" enctype="multipart/form-data" class="row g-3">
     @Html.AntiForgeryToken()
@@ -34,7 +34,7 @@
 
     <div class="col-md-4">
         <label class="form-label">Data de Nascimento</label>
-        <input name="DataNascimento" value="@(Model.DataNascimento.ToString("yyyy-MM-dd"))" class="form-control" type="date" />
+        <input name="DataNascimento" value="@Model.DataNascimento.ToString("yyyy-MM-dd")" class="form-control" type="date" />
     </div>
 
     <div class="col-md-4">
@@ -43,10 +43,10 @@
         @if (!string.IsNullOrEmpty(Model.Imagem))
         {
             <img src="@FotoUrl(Model.Imagem)" class="mt-2 rounded" style="width:96px;height:96px;object-fit:cover;" />
-        }   
+        }
     </div>
 
-    <input type="hidden" name="TipoUsuarioId" value="2" />
+    <input type="hidden" name="TipoUsuarioId" value="3" />
 
     <div class="col-12">
         <button type="submit" class="btn btn-primary">Salvar</button>

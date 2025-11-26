@@ -164,3 +164,78 @@ html[data-theme="dark"] select {
     color: #222 !important;
     border-color: #999 !important;
 }
+
+/* ================================================
+      AUTH / SPLIT LAYOUT (registro/login inspirado no design)
+   ================================================ */
+.auth-split { min-height: 100vh; }
+.auth-left {
+    background: linear-gradient(135deg, #6a4bd3 0%, #8f5de8 60%, #a16be8 100%);
+    color: #fff;
+    position: relative;
+    padding: 4rem 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.auth-left .hero {
+    max-width: 520px;
+}
+.auth-left h1 {
+    font-size: 2.75rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    line-height: 1.05;
+}
+.auth-left p {
+    font-size: 1.05rem;
+    opacity: 0.95;
+}
+
+/* Decoration elements (simple circles/lines) */
+.auth-left::before,
+.auth-left::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.08;
+}
+.auth-left::before {
+    width: 260px; height: 260px; right: 6%; top: 18%; background: #ffffff;
+}
+.auth-left::after {
+    width: 160px; height: 160px; left: 6%; bottom: 8%; background: #ffffff;
+}
+
+.auth-right {
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+}
+.auth-card {
+    width: 100%;
+    max-width: 420px;
+}
+.input-rounded { border-radius: 30px !important; }
+.btn-gradient {
+    background: linear-gradient(90deg, #6a4bd3, #8f5de8);
+    color: #fff;
+    border-radius: 30px;
+    padding: 10px 36px;
+    border: none;
+}
+.form-small { font-size: 0.92rem; }
+.footer-link { text-align: center; margin-top: 0.8rem; }
+
+/* Responsive: hide left hero on small screens */
+@media (max-width: 991.98px) {
+    .auth-left { display: none !important; }
+    .auth-right { padding: 2rem; }
+}
+
+/* Small visual tweak for inputs' icon */
+.input-group-text.bg-muted {
+    background: transparent; border: none; color: #999; padding-right: 0.75rem;
+}

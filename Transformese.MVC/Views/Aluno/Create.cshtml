@@ -1,0 +1,48 @@
+@model UsuarioDto
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+
+@{
+    ViewData["Title"] = "Criar Aluno";
+}
+
+<h2>Novo Aluno</h2>
+
+<form asp-action="Create" method="post" enctype="multipart/form-data" class="row g-3">
+    @Html.AntiForgeryToken()
+
+    <div class="col-md-6">
+        <label class="form-label">Nome</label>
+        <input name="Nome" class="form-control" />
+    </div>
+
+    <div class="col-md-6">
+        <label class="form-label">Email</label>
+        <input name="Email" class="form-control" type="email" />
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Senha</label>
+        <input name="Senha" class="form-control" type="password" />
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Data de Nascimento</label>
+        <input name="DataNascimento" class="form-control" type="date" />
+    </div>
+
+    <div class="col-md-4">
+        <label for="FotoPerfil" class="form-label">Foto de Perfil (opcional)</label>
+        <input type="file" name="FotoPerfil" class="form-control" accept="image/*" />
+    </div>
+
+    <input type="hidden" name="TipoUsuarioId" value="3" />
+
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">Criar</button>
+        <a asp-action="Index" class="btn btn-secondary ms-2">Cancelar</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,83 +1,223 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using Transformese.MVC.Services;
+using Transformese.Domain.Entities;
+using Transformese.Api.DTOs;
 
-namespace TransformeseMVC.Web.Controllers
+namespace TransformeSeMVC.Web.Controllers
 {
+    [Authorize(Roles = "Administrador")]
     public class AdminController : Controller
     {
-        // GET: AdminController
-        public ActionResult Index()
+        private readonly IUsuarioApiClient _usuarioApi;
+
+        public AdminController(IUsuarioApiClient usuarioApi)
         {
-            return View();
+            _usuarioApi = usuarioApi;
         }
 
-        // GET: AdminController/Details/5
-        public ActionResult Details(int id)
+        // GET: /Admin
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var usuarios = await _usuarioApi.GetAllAsync(); // IEnumerable<Usuario>
+            var admins = (usuarios ?? Enumerable.Empty<Usuario>())
+                .Where(u => u.TipoUsuarioId == 1)
+                .Select(u => new UsuarioDto
+                {
+                    IdUsuario = u.IdUsuario,
+                    Nome = u.Nome,
+                    Email = u.Email,
+                    DataNascimento = u.DataNascimento,
+                    Imagem = u.FotoPerfil,
+                    TipoUsuarioId = u.TipoUsuarioId,
+                    TipoUsuarioDescricao = u.TipoUsuario?.DescricaoTipoUsuario ?? "Administrador"
+                })
+                .ToList();
+
+            return View(admins);
         }
 
-        // GET: AdminController/Create
-        public ActionResult Create()
+        // GET: /Admin/Create
+        [HttpGet]
+        public IActionResult Create()
         {
-            return View();
+            return View(new UsuarioDto());
         }
 
-        // POST: AdminController/Create
+        // POST: /Admin/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public async Task<IActionResult> Create(IFormCollection form, IFormFile? FotoPerfil)
         {
+            var nome = form["Nome"].ToString();
+            var email = form["Email"].ToString();
+            var senha = form["Senha"].ToString();
+            DateTime.TryParse(form["DataNascimento"].ToString(), out var dataNascimento);
+
+            if (string.IsNullOrWhiteSpace(nome) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(senha))
+            {
+                ModelState.AddModelError("", "Nome, Email e Senha são obrigatórios.");
+                return View(new UsuarioDto { Nome = nome, Email = email });
+            }
+
+            var usuario = new Usuario
+            {
+                Nome = nome,
+                Email = email,
+                Senha = senha,
+                DataNascimento = dataNascimento == default ? DateTime.UtcNow : dataNascimento,
+                TipoUsuarioId = 1 // Administrador
+            };
+
+            MemoryStream? ms = null;
             try
             {
-                return RedirectToAction(nameof(Index));
+                if (FotoPerfil != null && FotoPerfil.Length > 0)
+                {
+                    ms = new MemoryStream();
+                    await FotoPerfil.CopyToAsync(ms);
+                    ms.Position = 0;
+                }
+
+                var resp = await _usuarioApi.RegisterAsync(usuario, ms, FotoPerfil?.FileName);
+
+                if (resp.IsSuccessStatusCode)
+                    return RedirectToAction(nameof(Index));
+
+                ModelState.AddModelError("", $"Erro ao criar administrador. Código: {resp.StatusCode}");
+                return View(new UsuarioDto { Nome = usuario.Nome, Email = usuario.Email, DataNascimento = usuario.DataNascimento });
             }
-            catch
+            finally
             {
-                return View();
+                ms?.Dispose();
             }
         }
 
-        // GET: AdminController/Edit/5
-        public ActionResult Edit(int id)
+        // GET: /Admin/Details/{id}
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
         {
-            return View();
+            var u = await _usuarioApi.GetByIdAsync(id);
+            if (u == null) return NotFound();
+
+            var dto = new UsuarioDto
+            {
+                IdUsuario = u.IdUsuario,
+                Nome = u.Nome,
+                Email = u.Email,
+                DataNascimento = u.DataNascimento,
+                Imagem = u.FotoPerfil,
+                TipoUsuarioId = u.TipoUsuarioId,
+                TipoUsuarioDescricao = u.TipoUsuario?.DescricaoTipoUsuario ?? "Administrador"
+            };
+
+            return View(dto);
         }
 
-        // POST: AdminController/Edit/5
+        // GET: /Admin/Edit/{id}
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var u = await _usuarioApi.GetByIdAsync(id);
+            if (u == null) return NotFound();
+
+            var dto = new UsuarioDto
+            {
+                IdUsuario = u.IdUsuario,
+                Nome = u.Nome,
+                Email = u.Email,
+                DataNascimento = u.DataNascimento,
+                Imagem = u.FotoPerfil,
+                TipoUsuarioId = u.TipoUsuarioId,
+                TipoUsuarioDescricao = u.TipoUsuario?.DescricaoTipoUsuario ?? "Administrador"
+            };
+
+            return View(dto);
+        }
+
+        // POST: /Admin/Edit/{id}
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public async Task<IActionResult> Edit(int id, IFormCollection form, IFormFile? FotoPerfil)
         {
+            var nome = form["Nome"].ToString();
+            var email = form["Email"].ToString();
+            var senha = form["Senha"].ToString();
+            DateTime.TryParse(form["DataNascimento"].ToString(), out var dataNascimento);
+
+            var usuario = new Usuario
+            {
+                IdUsuario = id,
+                Nome = nome,
+                Email = email,
+                Senha = senha,
+                DataNascimento = dataNascimento,
+                TipoUsuarioId = 1
+            };
+
+            MemoryStream? ms = null;
             try
             {
-                return RedirectToAction(nameof(Index));
+                if (FotoPerfil != null && FotoPerfil.Length > 0)
+                {
+                    ms = new MemoryStream();
+                    await FotoPerfil.CopyToAsync(ms);
+                    ms.Position = 0;
+                }
+
+                var resp = await _usuarioApi.UpdateAsync(id, usuario, ms, FotoPerfil?.FileName);
+
+                if (resp.IsSuccessStatusCode || resp.StatusCode == System.Net.HttpStatusCode.NoContent)
+                    return RedirectToAction(nameof(Index));
+
+                ModelState.AddModelError("", $"Erro ao atualizar administrador. Código: {resp.StatusCode}");
+                return View(new UsuarioDto { IdUsuario = id, Nome = nome, Email = email, DataNascimento = dataNascimento });
             }
-            catch
+            finally
             {
-                return View();
+                ms?.Dispose();
             }
         }
 
-        // GET: AdminController/Delete/5
-        public ActionResult Delete(int id)
+        // GET: /Admin/Delete/{id}
+        [HttpGet]
+        public async Task<IActionResult> Delete(int id)
         {
-            return View();
+            var u = await _usuarioApi.GetByIdAsync(id);
+            if (u == null) return NotFound();
+
+            var dto = new UsuarioDto
+            {
+                IdUsuario = u.IdUsuario,
+                Nome = u.Nome,
+                Email = u.Email,
+                DataNascimento = u.DataNascimento,
+                Imagem = u.FotoPerfil,
+                TipoUsuarioId = u.TipoUsuarioId,
+                TipoUsuarioDescricao = u.TipoUsuario?.DescricaoTipoUsuario ?? "Administrador"
+            };
+
+            return View(dto);
         }
 
-        // POST: AdminController/Delete/5
-        [HttpPost]
+        // POST: /Admin/Delete/{id}
+        [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            try
+            var resp = await _usuarioApi.DeleteAsync(id);
+            if (!resp.IsSuccessStatusCode)
             {
-                return RedirectToAction(nameof(Index));
+                TempData["Error"] = "Erro ao deletar administrador.";
             }
-            catch
-            {
-                return View();
-            }
+
+            return RedirectToAction(nameof(Index));
         }
     }
 }

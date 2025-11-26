@@ -1,5 +1,64 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model CursoDto
+@using Transformese.Api.DTOs
+@using Microsoft.AspNetCore.Mvc.Rendering
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+
 @{
+    ViewData["Title"] = "Editar Curso";
+    var apiBase = (Configuration["Api:BaseUrl"] ?? "").TrimEnd('/');
+    var unidades = ViewBag.Unidades as IEnumerable<UnidadeDto> ?? Enumerable.Empty<UnidadeDto>();
+    var unidadeSelect = new SelectList(unidades, "IdUnidade", "Nome", Model.UnidadeId);
+    string ImgUrl(string img)
+    {
+        if (string.IsNullOrWhiteSpace(img)) return "/images/default-course.jpg";
+        if (img.StartsWith("http", System.StringComparison.OrdinalIgnoreCase)) return img;
+        return string.IsNullOrEmpty(apiBase) ? $"/images/cursos/{img}" : $"{apiBase}/images/cursos/{img}";
+    }
+}
+
+<h2 class="mb-4">Editar Curso</h2>
+
+<form asp-action="Edit" asp-route-id="@Model.IdCurso" method="post" enctype="multipart/form-data" class="row g-3">
+    @Html.AntiForgeryToken()
+
+    <div class="col-md-8">
+        <label asp-for="Nome" class="form-label"></label>
+        <input asp-for="Nome" class="form-control" />
+        <span asp-validation-for="Nome" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-4">
+        <label asp-for="UnidadeId" class="form-label">Unidade</label>
+        <select asp-for="UnidadeId" class="form-select" asp-items="unidadeSelect">
+            <option value="">-- Selecione --</option>
+        </select>
+        <span asp-validation-for="UnidadeId" class="text-danger"></span>
+    </div>
+
+    <div class="col-12">
+        <label asp-for="Descricao" class="form-label"></label>
+        <textarea asp-for="Descricao" class="form-control" rows="4"></textarea>
+        <span asp-validation-for="Descricao" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6">
+        <label for="arquivo" class="form-label">Substituir imagem (opcional)</label>
+        <input type="file" name="arquivo" id="arquivo" class="form-control" accept="image/*" />
+    </div>
+
+    <div class="col-md-6">
+        <label class="form-label">Imagem atual</label>
+        <div>
+            <img src="@ImgUrl(Model.Imagem)" alt="@Model.Nome" class="img-fluid rounded" style="max-height:120px; object-fit:cover;" />
+        </div>
+    </div>
+
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">Salvar</button>
+        <a asp-action="Index" class="btn btn-secondary ms-2">Cancelar</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
 }

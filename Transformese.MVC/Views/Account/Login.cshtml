@@ -1,38 +1,75 @@
 ﻿@model TransformeseMVC.Web.ViewModels.LoginViewModel
 @{
-    ViewData["Title"] = "Login";
+    ViewData["Title"] = "Sign In";
 }
 
-<div class="row justify-content-center">
-    <div class="col-md-5">
-        <div class="card shadow-sm p-4 mt-5">
-            <h3 class="text-center mb-4 text-primary fw-bold">Acesse sua conta</h3>
+<div class="container-fluid auth-split">
+    <div class="row g-0 min-vh-100">
 
-            @if (ViewBag.Error != null)
-            {
-                <div class="alert alert-danger text-center">
-                    @ViewBag.Error
-                </div>
-            }
-
-
-            <form asp-action="Login" method="post">
-                <div class="mb-3">
-                    <label asp-for="Email" class="form-label"></label>
-                    <input asp-for="Email" class="form-control" />
-                    <span asp-validation-for="Email" class="text-danger"></span>
-                </div>
-                <div class="mb-3">
-                    <label asp-for="Password" class="form-label"></label>
-                    <input asp-for="Password" type="password" class="form-control" />
-                    <span asp-validation-for="Password" class="text-danger"></span>
-                </div>
-                <div class="form-check mb-3">
-                    <input asp-for="RememberMe" class="form-check-input" />
-                    <label asp-for="RememberMe" class="form-check-label"></label>
-                </div>
-                <button type="submit" class="btn btn-transforme w-100">Entrar</button>
-            </form>
+        <!-- HERO LEFT -->
+        <div class="col-12 col-lg-7 auth-left d-none d-lg-flex">
+            <div class="hero text-center text-lg-start px-5 px-lg-6">
+                <img src="~/images/logo-transformese.png" alt="Transforme-se" style="height:56px;" class="mb-4" />
+                <h1 class="display-5 fw-bold mb-3">Welcome back!</h1>
+                <p class="lead opacity-90 mb-4">You can sign in to access with your existing account.</p>
+            </div>
         </div>
+
+        <!-- FORM RIGHT -->
+        <div class="col-12 col-lg-5 auth-right d-flex align-items-center">
+            <div class="auth-card card shadow-sm rounded-4 p-0">
+                <div class="card-body px-4 py-5">
+                    <h3 class="fw-bold mb-4">Sign In</h3>
+
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="alert alert-danger text-center">@ViewBag.Error</div>
+                    }
+
+                    <form asp-action="Login" method="post" novalidate>
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-3">
+                            <label class="form-label visually-hidden" asp-for="Email"></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-muted"><i class="bi bi-person"></i></span>
+                                <input asp-for="Email" class="form-control input-rounded form-small" placeholder="Username or email" />
+                            </div>
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label visually-hidden" asp-for="Password"></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-muted"><i class="bi bi-lock"></i></span>
+                                <input asp-for="Password" type="password" class="form-control input-rounded form-small" placeholder="Password" />
+                            </div>
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-3 form-small">
+                            <div class="form-check">
+                                <input asp-for="RememberMe" class="form-check-input" />
+                                <label asp-for="RememberMe" class="form-check-label ms-1">Remember me</label>
+                            </div>
+                            <a href="@Url.Action("ForgotPassword", "Account")" class="small">Forgot password?</a>
+                        </div>
+
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-gradient btn-lg input-rounded">Sign In</button>
+                        </div>
+
+                        <div class="footer-link form-small">
+                            New here? <a href="@Url.Action("Register", "Account")">Create an Account</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

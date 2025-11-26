@@ -1,9 +1,16 @@
-﻿@model IEnumerable<Transformese.Domain.Entities.Usuario>
+﻿@model IEnumerable<UsuarioDto>
+@using System.Linq
 @inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 
 @{
     ViewData["Title"] = "Professores";
     var apiBase = (Configuration["Api:BaseUrl"] ?? "").TrimEnd('/');
+    string FotoUrl(string foto)
+    {
+        if (string.IsNullOrWhiteSpace(foto)) return "/images/default-user.jpg";
+        if (foto.StartsWith("http", System.StringComparison.OrdinalIgnoreCase)) return foto;
+        return string.IsNullOrEmpty(apiBase) ? $"/images/usuarios/{foto}" : $"{apiBase}/images/usuarios/{foto}";
+    }
 }
 
 <h2 class="mb-4">Professores</h2>
@@ -19,32 +26,33 @@
             <th>Nome</th>
             <th>Email</th>
             <th>Data Nasc.</th>
-            <th style="width:220px;">Ações</th>
+            <th class="text-end" style="width:180px;">Ações</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var prof in Model ?? Enumerable.Empty<Transformese.Domain.Entities.Usuario>())
+        @foreach (var prof in Model ?? Enumerable.Empty<UsuarioDto>())
         {
             <tr>
                 <td>
-                    <img src="@(string.IsNullOrEmpty(prof.FotoPerfil) ? "/images/default-user.jpg" : $"{apiBase}/images/usuarios/{prof.FotoPerfil}")"
-                         alt="Foto" class="rounded-circle" style="width:64px;height:64px;object-fit:cover;" />
+                    <img src="@FotoUrl(prof.Imagem)" alt="Foto" class="rounded-circle" style="width:64px;height:64px;object-fit:cover;" />
                 </td>
-                <td>@prof.Nome</td>
-                <td>@prof.Email</td>
-                <td>@(prof.DataNascimento.ToString("yyyy-MM-dd"))</td>
-                <td>
-                    <a class="btn btn-sm btn-info me-1" asp-action="Details" asp-route-id="@prof.IdUsuario">
-                        <i class="bi bi-eye"></i> Ver
-                    </a>
-                    <a class="btn btn-sm btn-warning text-white me-1" asp-action="Edit" asp-route-id="@prof.IdUsuario">
-                        <i class="bi bi-pencil"></i> Editar
-                    </a>
-                    <form asp-action="Delete" asp-route-id="@prof.IdUsuario" method="post" class="d-inline-block" onsubmit="return confirm('Confirma exclusão deste professor?');">
-                        <button type="submit" class="btn btn-sm btn-danger">
-                            <i class="bi bi-trash"></i> Deletar
-                        </button>
-                    </form>
+                <td class="align-middle">@prof.Nome</td>
+                <td class="align-middle">@prof.Email</td>
+                <td class="align-middle">@(prof.DataNascimento.ToString("yyyy-MM-dd"))</td>
+                <td class="align-middle text-end">
+                    <div class="btn-group" role="group" aria-label="Ações">
+                        <a class="btn btn-sm btn-outline-info" asp-action="Details" asp-route-id="@prof.IdUsuario" title="Ver">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <a class="btn btn-sm btn-outline-warning" asp-action="Edit" asp-route-id="@prof.IdUsuario" title="Editar">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form asp-action="Delete" asp-route-id="@prof.IdUsuario" method="post" class="d-inline-block ms-1" onsubmit="return confirm('Confirma exclusão deste professor?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Deletar">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </div>
                 </td>
             </tr>
         }
