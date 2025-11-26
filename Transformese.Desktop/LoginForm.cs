@@ -4,39 +4,62 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Guna.UI2.WinForms;
 
 namespace Transformese.Desktop
 {
     public partial class LoginForm : Form
     {
-        private readonly HttpClient _httpClient;
+        private HttpClient? _httpClient; // inicializado no Load
 
         public LoginForm()
         {
-            _httpClient = new HttpClient { BaseAddress = new Uri("https://localhost:5001/") };
             InitializeComponent();
         }
 
-        // Designer-friendly event handler signature
+        // Inicializa recursos que só devem rodar em tempo de execução (evita problemas no designer)
+        private void LoginForm_Load(object? sender, EventArgs e)
+        {
+            try
+            {
+                _httpClient = new HttpClient { BaseAddress = new Uri("https://localhost:5001/") };
+            }
+            catch
+            {
+                _httpClient = null;
+            }
+        }
+
+        // Handler ligado pelo designer (assinatura void para o designer carregar)
         private async void BtnLogin_Click(object? sender, EventArgs e)
         {
-            // forward to async worker
             await BtnLogin_ClickAsync(sender, e);
         }
 
+        // Lógica assíncrona real
         private async Task BtnLogin_ClickAsync(object? sender, EventArgs e)
         {
-            // locate button control safely
-            var btn = this.ControlsFind<Guna.UI2.WinForms.Guna2GradientButton>("btnLogin");
+            var btn = this.ControlsFind<Guna2GradientButton>("btnLogin");
             if (btn != null) btn.Enabled = false;
 
             try
             {
-                // find inputs
-                var txtEmail = this.ControlsFind<Guna.UI2.WinForms.Guna2TextBox>("txtEmail");
-                var txtPassword = this.ControlsFind<Guna.UI2.WinForms.Guna2TextBox>("txtPassword");
+                if (_httpClient == null)
+                {
+                    MessageBox.Show(this, "HttpClient não inicializado.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                var txtEmail = this.ControlsFind<Guna2TextBox>("txtEmail");
+                var txtPassword = this.ControlsFind<Guna2TextBox>("txtPassword");
                 var email = txtEmail?.Text?.Trim() ?? string.Empty;
                 var senha = txtPassword?.Text ?? string.Empty;
+
+                if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(senha))
+                {
+                    MessageBox.Show(this, "Preencha e-mail e senha.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
 
                 var payload = new { Email = email, Senha = senha };
                 var response = await _httpClient.PostAsJsonAsync("api/auth/login", payload);
@@ -53,7 +76,6 @@ namespace Transformese.Desktop
                 var token = root.GetProperty("token").GetString();
                 var nome = root.GetProperty("nome").GetString();
 
-                // Store token in a simple static session
                 Session.Token = token ?? string.Empty;
                 Session.Nome = nome ?? string.Empty;
 
@@ -68,35 +90,44 @@ namespace Transformese.Desktop
             }
             finally
             {
-                var btn2 = this.ControlsFind<Guna.UI2.WinForms.Guna2GradientButton>("btnLogin");
+                var btn2 = this.ControlsFind<Guna2GradientButton>("btnLogin");
                 if (btn2 != null) btn2.Enabled = true;
             }
         }
+
+        // fechar
+        private void BtnClose_Click(object? sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        // cadastrar (placeholder)
+        private void BtnRegister_Click(object? sender, EventArgs e)
+        {
+            MessageBox.Show(this, "Tela de cadastro não implementada.", "Cadastrar", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
     }
 
-    // simple static session container
+    // sessão simples
     public static class Session
     {
         public static string Token { get; set; } = string.Empty;
         public static string Nome { get; set; } = string.Empty;
     }
 
-    // small helper extension to find controls by field name created by designer
+    // helper para localizar controles em runtime
     public static class ControlExtensions
     {
         public static T? ControlsFind<T>(this Control parent, string fieldName) where T : Control
         {
-            // designer fields are private; we try to find by runtime type and maybe matching placeholder like Name
             foreach (Control c in parent.Controls)
             {
                 if (c is T t && string.Equals(c.Name, fieldName, StringComparison.OrdinalIgnoreCase))
                     return t;
 
-                // recursive
                 var found = c.ControlsFind<T>(fieldName);
                 if (found != null) return found;
             }
-            // fallback: try first T
             foreach (Control c in parent.Controls)
                 if (c is T t) return t;
             return default;

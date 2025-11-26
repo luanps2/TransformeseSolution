@@ -15,12 +15,12 @@ namespace Transformese.Desktop
             Application.SetCompatibleTextRenderingDefault(false);
 
             // show login form
-            using var login = new LoginForm();
+            using var login = new frmLogin();
             var result = login.ShowDialog();
             if (result == DialogResult.OK)
             {
                 // open main form placeholder
-                Application.Run(new Form { Text = $"Transformese - {Session.Nome}", Width = 1000, Height = 700 });
+                Application.Run(new Form { Text = $"Transformese", Width = 1000, Height = 700 });
             }
         }
     }
